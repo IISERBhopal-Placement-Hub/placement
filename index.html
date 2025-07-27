@@ -551,8 +551,8 @@
         <div class="year-selector">
             <button class="year-btn" onclick="showYear('2021-22')">2021-22</button>
             <button class="year-btn" onclick="showYear('2022-23')">2022-23</button>
-            <button class="year-btn" onclick="showYear('2023-24')">2023-24</button>
-            <button class="year-btn active" onclick="showYear('2024-25')">2024-25</button>
+            <button class="year-btn active" onclick="showYear('2023-24')">2023-24</button>
+            <button class="year-btn" onclick="showYear('2024-25')">2024-25</button>
             <button class="year-btn" onclick="showComparison()">Compare All Years</button>
         </div>
 
@@ -764,7 +764,7 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            showYear('2024-25');
+            showYear('2023-24'); // Start with a year that has complete data
         });
 
         // Show year data
@@ -1085,7 +1085,7 @@
             let colorIndex = 0;
             
             for (const [dept, stats] of Object.entries(departments)) {
-                if (stats.placed !== null) {
+                if (stats.placed !== null && stats.placed > 0) {
                     data.push({
                         label: dept.split(' ').slice(0, 2).join(' '),
                         value: stats.placed,
@@ -1093,6 +1093,18 @@
                     });
                     colorIndex++;
                 }
+            }
+            
+            if (data.length === 0) {
+                // Draw "No Data Available" message
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Placement data available', width / 2, height / 2);
+                ctx.font = '12px Arial';
+                ctx.fillText('See department cards below for details', width / 2, height / 2 + 25);
+                return;
             }
             
             // Calculate total
@@ -1168,7 +1180,17 @@
                 }
             }
             
-            if (data.length === 0) return;
+            if (data.length === 0) {
+                // Draw "No Data Available" message
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Salary data not available for this year', width / 2, height / 2);
+                ctx.font = '12px Arial';
+                ctx.fillText('(Data collection may be in progress)', width / 2, height / 2 + 25);
+                return;
+            }
             
             // Set up chart dimensions
             const margin = { top: 20, right: 20, bottom: 60, left: 50 };
