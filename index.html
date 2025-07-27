@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IISER Bhopal Placement Statistics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #3949ab;
+            --accent-color: #5c6bc0;
+            --success-color: #2e7d32;
+            --warning-color: #f57c00;
+            --danger-color: #c62828;
+            --light-bg: #f5f5f5;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .bg-animation span {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            animation: move 25s linear infinite;
+            bottom: -150px;
+        }
+
+        @keyframes move {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+                border-radius: 0;
+            }
+            100% {
+                transform: translateY(-1000px) rotate(720deg);
+                opacity: 0;
+                border-radius: 50%;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Year Selector */
+        .year-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .year-btn {
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
+        }
+
+        .year-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .year-btn.active {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-detail {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* Department Cards */
+        .department-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .dept-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .dept-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .dept-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .dept-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        .dept-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .dept-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .dept-stat {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .dept-stat:hover {
+            background: #e8eaf6;
+            transform: scale(1.05);
+        }
+
+        .dept-stat-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .dept-stat-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Charts Container */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* International Placements */
+        .intl-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .intl-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .intl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .intl-item {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .intl-item:hover {
+            transform: scale(1.05);
+            background: #e8eaf6;
+        }
+
+        /* Progress Bars */
+        .progress-container {
+            margin-top: 15px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 5px;
+            transition: width 1s ease-out;
+            animation: progressAnimation 1.5s ease-out;
+        }
+
+        @keyframes progressAnimation {
+            from {
+                width: 0;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .year-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .year-btn {
+                width: 200px;
+            }
+            
+            .department-grid,
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+            overflow-x: auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--light-bg);
+        }
+
+        .comparison-table td {
+            font-size: 0.95rem;
+        }
+
+        /* Pulse Animation for Key Stats */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <span style="left: 10%; animation-delay: 0s;"></span>
+        <span style="left: 20%; animation-delay: 2s;"></span>
+        <span style="left: 30%; animation-delay: 4s;"></span>
+        <span style="left: 40%; animation-delay: 0s;"></span>
+        <span style="left: 50%; animation-delay: 2s;"></span>
+        <span style="left: 60%; animation-delay: 4s;"></span>
+        <span style="left: 70%; animation-delay: 0s;"></span>
+        <span style="left: 80%; animation-delay: 2s;"></span>
+        <span style="left: 90%; animation-delay: 4s;"></span>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>IISER Bhopal Placement Statistics Dashboard</h1>
+            <p>Comprehensive placement data for B.Tech/BE/BS programs</p>
+        </div>
+
+        <!-- Year Selector -->
+        <div class="year-selector">
+            <button class="year-btn" onclick="showYear('2021-22')">2021-22</button>
+            <button class="year-btn" onclick="showYear('2022-23')">2022-23</button>
+            <button class="year-btn" onclick="showYear('2023-24')">2023-24</button>
+            <button class="year-btn active" onclick="showYear('2024-25')">2024-25</button>
+            <button class="year-btn" onclick="showComparison()">Compare All Years</button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Dynamic Content Container -->
+        <div id="content-container">
+            <!-- Content will be dynamically loaded here -->
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Data sourced from RTI Application | IISER Bhopal | Updated: December 2024</p>
+        </div>
+    </div>
+
+    <script>
+        // Placement Data
+        const placementData = {
+            '2021-22': {
+                departments: {
+                    'Chemical Engineering': {
+                        registered: 4,
+                        placed: 3,
+                        maxSalary: 12.24,
+                        avgSalary: 12,
+                        minSalary: null,
+                        intlStudents: 1,
+                        intlAvgSalary: 12
+                    },
+                    'Data Science and Engineering': {
+                        registered: null,
+                        placed: null,
+                        maxSalary: null,
+                        avgSalary: null,
+                        minSalary: null,
+                        intlStudents: null,
+                        intlAvgSalary: null
+                    },
+                    'Economic Sciences': {
+                        registered: 10,
+                        placed: 9,
+                        maxSalary: 19,
+                        avgSalary: 10,
+                        minSalary: 6.42,
+                        intlStudents: 4,
+                        intlAvgSalary: 10
+                    },
+                    'Electrical Engineering and Computer Sciences': {
+                        registered: null,
+                        placed: null,
+                        maxSalary: 31,
+                        avgSalary: 11,
+                        minSalary: null,
+                        intlStudents: 4,
+                        intlAvgSalary: 11
+                    }
+                },
+                overall: {
+                    medianSalary: 12,
+                    avgSalary: 14.19
+                }
+            },
+            '2022-23': {
+                departments: {
+                    'Chemical Engineering': {
+                        registered: null,
+                        placed: null,
+                        maxSalary: null,
+                        avgSalary: null,
+                        minSalary: null,
+                        intlStudents: null,
+                        intlAvgSalary: null
+                    },
+                    'Data Science and Engineering': {
+                        registered: 18,
+                        placed: 10,
+                        maxSalary: 19,
+                        avgSalary: 12.5,
+                        minSalary: 4.80,
+                        intlStudents: 4,
+                        intlAvgSalary: 12.5
+                    },
+                    'Economic Sciences': {
+                        registered: 3,
+                        placed: 2,
+                        maxSalary: 19,
+                        avgSalary: 14.5,
+                        minSalary: 10,
+                        intlStudents: null,
+                        intlAvgSalary: null
+                    },
+                    'Electrical Engineering and Computer Sciences': {
+                        registered: 7,
+                        placed: 5,
+                        maxSalary: 19,
+                        avgSalary: 11.4,
+                        minSalary: 8,
+                        intlStudents: 2,
+                        intlAvgSalary: 12
+                    }
+                },
+                overall: {
+                    medianSalary: 10.5,
+                    avgSalary: 11.80
+                }
+            },
+            '2023-24': {
+                departments: {
+                    'Chemical Engineering': {
+                        registered: 2,
+                        placed: 2,
+                        maxSalary: null,
+                        avgSalary: null,
+                        minSalary: null,
+                        intlStudents: 0,
+                        intlAvgSalary: null
+                    },
+                    'Data Science and Engineering': {
+                        registered: 19,
+                        placed: 17,
+                        maxSalary: 19,
+                        avgSalary: 12,
+                        minSalary: 4.80,
+                        intlStudents: 5,
+                        intlAvgSalary: 11
+                    },
+                    'Economic Sciences': {
+                        registered: 2,
+                        placed: 1,
+                        maxSalary: 19,
+                        avgSalary: 14.5,
+                        minSalary: 10,
+                        intlStudents: 0,
+                        intlAvgSalary: null
+                    },
+                    'Electrical Engineering and Computer Sciences': {
+                        registered: 9,
+                        placed: 7,
+                        maxSalary: 19,
+                        avgSalary: 11.4,
+                        minSalary: 8,
+                        intlStudents: 3,
+                        intlAvgSalary: 10
+                    }
+                },
+                overall: {
+                    medianSalary: 10,
+                    avgSalary: 12.4
+                }
+            },
+            '2024-25': {
+                departments: {
+                    'Chemical Engineering': {
+                        registered: 0,
+                        placed: 0,
+                        maxSalary: null,
+                        avgSalary: null,
+                        minSalary: null,
+                        intlStudents: 0,
+                        intlAvgSalary: null
+                    },
+                    'Data Science and Engineering': {
+                        registered: 16,
+                        placed: 10,
+                        maxSalary: null,
+                        avgSalary: null,
+                        minSalary: null,
+                        intlStudents: 0,
+                        intlAvgSalary: null
+                    },
+                    'Economic Sciences': {
+                        registered: 7,
+                        placed: 4,
+                        maxSalary: null,
+                        avgSalary: null,
+                        minSalary: null,
+                        intlStudents: 1,
+                        intlAvgSalary: 10
+                    },
+                    'Electrical Engineering and Computer Sciences': {
+                        registered: 25,
+                        placed: 15,
+                        maxSalary: null,
+                        avgSalary: null,
+                        minSalary: null,
+                        intlStudents: 0,
+                        intlAvgSalary: null
+                    }
+                },
+                overall: {
+                    medianSalary: 9.7,
+                    avgSalary: 10.4
+                },
+                note: "In Progress"
+            }
+        };
+
+        // Department Icons
+        const deptIcons = {
+            'Chemical Engineering': '⚗️',
+            'Data Science and Engineering': '📊',
+            'Economic Sciences': '📈',
+            'Electrical Engineering and Computer Sciences': '💻'
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showYear('2024-25');
+        });
+
+        // Show year data
+        function showYear(year) {
+            showLoading();
+            
+            // Update active button
+            document.querySelectorAll('.year-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.innerText.includes(year)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            const data = placementData[year];
+            let html = '';
+
+            // Overall Statistics
+            html += `
+                <div class="stats-grid">
+                    <div class="stat-card pulse">
+                        <div class="stat-label">Overall Median Salary</div>
+                        <div class="stat-value">₹${data.overall.medianSalary} LPA</div>
+                        <div class="stat-detail">${year} Academic Year</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Overall Average Salary</div>
+                        <div class="stat-value">₹${data.overall.avgSalary} LPA</div>
+                        <div class="stat-detail">${year} Academic Year</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Registered</div>
+                        <div class="stat-value">${calculateTotal(data.departments, 'registered')}</div>
+                        <div class="stat-detail">Across all departments</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Placed</div>
+                        <div class="stat-value">${calculateTotal(data.departments, 'placed')}</div>
+                        <div class="stat-detail">
+                            ${data.note ? `<span style="color: var(--warning-color);">${data.note}</span>` : 'Final numbers'}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Department-wise Statistics
+            html += '<div class="department-grid">';
+            for (const [dept, stats] of Object.entries(data.departments)) {
+                html += `
+                    <div class="dept-card">
+                        <div class="dept-header">
+                            <div class="dept-icon">${deptIcons[dept]}</div>
+                            <div class="dept-name">${dept}</div>
+                        </div>
+                        <div class="dept-stats">
+                            ${stats.registered !== null ? `
+                                <div class="dept-stat">
+                                    <div class="dept-stat-label">Registered</div>
+                                    <div class="dept-stat-value">${stats.registered}</div>
+                                </div>
+                                <div class="dept-stat">
+                                    <div class="dept-stat-label">Placed</div>
+                                    <div class="dept-stat-value">${stats.placed}</div>
+                                </div>
+                            ` : ''}
+                            ${stats.maxSalary !== null ? `
+                                <div class="dept-stat">
+                                    <div class="dept-stat-label">Max Salary</div>
+                                    <div class="dept-stat-value">₹${stats.maxSalary} LPA</div>
+                                </div>
+                            ` : ''}
+                            ${stats.avgSalary !== null ? `
+                                <div class="dept-stat">
+                                    <div class="dept-stat-label">Avg Salary</div>
+                                    <div class="dept-stat-value">₹${stats.avgSalary} LPA</div>
+                                </div>
+                            ` : ''}
+                            ${stats.minSalary !== null ? `
+                                <div class="dept-stat">
+                                    <div class="dept-stat-label">Min Salary</div>
+                                    <div class="dept-stat-value">₹${stats.minSalary} LPA</div>
+                                </div>
+                            ` : ''}
+                            ${stats.intlStudents !== null && stats.intlStudents > 0 ? `
+                                <div class="dept-stat">
+                                    <div class="dept-stat-label">International</div>
+                                    <div class="dept-stat-value">${stats.intlStudents}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        ${stats.registered && stats.placed ? `
+                            <div class="progress-container">
+                                <div class="progress-label">
+                                    <span>Placement Rate</span>
+                                    <span>${Math.round((stats.placed / stats.registered) * 100)}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${(stats.placed / stats.registered) * 100}%;"></div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            html += '</div>';
+
+            // Charts
+            html += `
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <div class="chart-title">Department-wise Placement Distribution</div>
+                        <canvas id="placementChart" width="400" height="300"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">Salary Comparison by Department</div>
+                        <canvas id="salaryChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            `;
+
+            // International Placements
+            const intlTotal = calculateTotal(data.departments, 'intlStudents');
+            if (intlTotal > 0) {
+                html += `
+                    <div class="intl-section">
+                        <div class="intl-title">
+                            🌍 International Placements
+                        </div>
+                        <div class="intl-grid">
+                `;
+                for (const [dept, stats] of Object.entries(data.departments)) {
+                    if (stats.intlStudents && stats.intlStudents > 0) {
+                        html += `
+                            <div class="intl-item">
+                                <div style="font-size: 2rem; margin-bottom: 10px;">${deptIcons[dept]}</div>
+                                <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 5px;">${dept}</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-color);">${stats.intlStudents}</div>
+                                <div style="font-size: 0.9rem; color: #666;">Students</div>
+                                ${stats.intlAvgSalary ? `
+                                    <div style="margin-top: 10px; font-size: 0.9rem; color: #888;">
+                                        Avg: ₹${stats.intlAvgSalary} LPA
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+                }
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('content-container').innerHTML = html;
+            hideLoading();
+
+            // Draw charts after DOM is updated
+            setTimeout(() => {
+                drawPlacementChart(data.departments);
+                drawSalaryChart(data.departments);
+            }, 100);
+        }
+
+        // Show comparison of all years
+        function showComparison() {
+            showLoading();
+            
+            // Update active button
+            document.querySelectorAll('.year-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.innerText.includes('Compare')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            let html = `
+                <div class="comparison-table">
+                    <h2 style="color: var(--primary-color); margin-bottom: 20px;">Year-wise Comparison</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Academic Year</th>
+                                <th>Overall Median (LPA)</th>
+                                <th>Overall Average (LPA)</th>
+                                <th>Total Registered</th>
+                                <th>Total Placed</th>
+                                <th>Placement Rate</th>
+                                <th>International Placements</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            for (const [year, data] of Object.entries(placementData)) {
+                const totalRegistered = calculateTotal(data.departments, 'registered');
+                const totalPlaced = calculateTotal(data.departments, 'placed');
+                const intlTotal = calculateTotal(data.departments, 'intlStudents');
+                const placementRate = totalRegistered > 0 ? Math.round((totalPlaced / totalRegistered) * 100) : 'N/A';
+
+                html += `
+                    <tr>
+                        <td style="font-weight: 600;">${year} ${data.note ? `<span style="color: var(--warning-color); font-size: 0.8rem;">(${data.note})</span>` : ''}</td>
+                        <td>₹${data.overall.medianSalary}</td>
+                        <td>₹${data.overall.avgSalary}</td>
+                        <td>${totalRegistered || 'N/A'}</td>
+                        <td>${totalPlaced || 'N/A'}</td>
+                        <td>${placementRate}%</td>
+                        <td>${intlTotal}</td>
+                    </tr>
+                `;
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Department-wise comparison
+            html += `
+                <div class="comparison-table">
+                    <h2 style="color: var(--primary-color); margin-bottom: 20px;">Department-wise Salary Trends</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>2021-22</th>
+                                <th>2022-23</th>
+                                <th>2023-24</th>
+                                <th>2024-25</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            const allDepts = ['Chemical Engineering', 'Data Science and Engineering', 'Economic Sciences', 'Electrical Engineering and Computer Sciences'];
+            
+            for (const dept of allDepts) {
+                html += `<tr><td style="font-weight: 600;">${dept}</td>`;
+                for (const year of Object.keys(placementData)) {
+                    const stats = placementData[year].departments[dept];
+                    if (stats && stats.avgSalary) {
+                        html += `<td>₹${stats.avgSalary} LPA</td>`;
+                    } else {
+                        html += `<td>-</td>`;
+                    }
+                }
+                html += `</tr>`;
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Trend Charts
+            html += `
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <div class="chart-title">Overall Salary Trends</div>
+                        <canvas id="trendChart" width="400" height="300"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">Placement Rate Trends</div>
+                        <canvas id="placementRateChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('content-container').innerHTML = html;
+            hideLoading();
+
+            // Draw trend charts
+            setTimeout(() => {
+                drawTrendChart();
+                drawPlacementRateChart();
+            }, 100);
+        }
+
+        // Calculate totals
+        function calculateTotal(departments, field) {
+            let total = 0;
+            for (const stats of Object.values(departments)) {
+                if (stats[field] !== null && stats[field] !== undefined) {
+                    total += stats[field];
+                }
+            }
+            return total;
+        }
+
+        // Show/Hide loading
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 300);
+        }
+
+        // Draw placement distribution chart
+        function drawPlacementChart(departments) {
+            const canvas = document.getElementById('placementChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Prepare data
+            const data = [];
+            const colors = ['#1a237e', '#3949ab', '#5c6bc0', '#7986cb'];
+            let colorIndex = 0;
+            
+            for (const [dept, stats] of Object.entries(departments)) {
+                if (stats.placed !== null) {
+                    data.push({
+                        label: dept.split(' ').slice(0, 2).join(' '),
+                        value: stats.placed,
+                        color: colors[colorIndex % colors.length]
+                    });
+                    colorIndex++;
+                }
+            }
+            
+            // Calculate total
+            const total = data.reduce((sum, item) => sum + item.value, 0);
+            
+            // Draw pie chart
+            let currentAngle = -Math.PI / 2;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) / 3;
+            
+            data.forEach(item => {
+                const sliceAngle = (item.value / total) * 2 * Math.PI;
+                
+                // Draw slice
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = item.color;
+                ctx.fill();
+                
+                // Draw label
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7);
+                const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(item.value, labelX, labelY);
+                
+                currentAngle += sliceAngle;
+            });
+            
+            // Draw legend
+            let legendY = 20;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            
+            data.forEach(item => {
+                ctx.fillStyle = item.color;
+                ctx.fillRect(10, legendY, 15, 15);
+                ctx.fillStyle = '#333';
+                ctx.fillText(item.label, 30, legendY + 12);
+                legendY += 25;
+            });
+        }
+
+        // Draw salary comparison chart
+        function drawSalaryChart(departments) {
+            const canvas = document.getElementById('salaryChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Prepare data
+            const data = [];
+            for (const [dept, stats] of Object.entries(departments)) {
+                if (stats.avgSalary !== null) {
+                    data.push({
+                        label: dept.split(' ').slice(0, 2).join(' '),
+                        min: stats.minSalary || 0,
+                        avg: stats.avgSalary,
+                        max: stats.maxSalary || stats.avgSalary
+                    });
+                }
+            }
+            
+            if (data.length === 0) return;
+            
+            // Set up chart dimensions
+            const margin = { top: 20, right: 20, bottom: 60, left: 50 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+            const barWidth = chartWidth / (data.length * 3 + 1);
+            const maxValue = Math.max(...data.map(d => d.max));
+            
+            // Draw axes
+            ctx.strokeStyle = '#ccc';
+            ctx.beginPath();
+            ctx.moveTo(margin.left, margin.top);
+            ctx.lineTo(margin.left, height - margin.bottom);
+            ctx.lineTo(width - margin.right, height - margin.bottom);
+            ctx.stroke();
+            
+            // Draw bars
+            data.forEach((item, index) => {
+                const x = margin.left + (index * 3 + 1) * barWidth;
+                
+                // Min salary bar
+                if (item.min > 0) {
+                    const minHeight = (item.min / maxValue) * chartHeight;
+                    ctx.fillStyle = '#e8eaf6';
+                    ctx.fillRect(x, height - margin.bottom - minHeight, barWidth * 0.8, minHeight);
+                }
+                
+                // Avg salary bar
+                const avgHeight = (item.avg / maxValue) * chartHeight;
+                ctx.fillStyle = '#5c6bc0';
+                ctx.fillRect(x + barWidth, height - margin.bottom - avgHeight, barWidth * 0.8, avgHeight);
+                
+                // Max salary bar
+                const maxHeight = (item.max / maxValue) * chartHeight;
+                ctx.fillStyle = '#1a237e';
+                ctx.fillRect(x + barWidth * 2, height - margin.bottom - maxHeight, barWidth * 0.8, maxHeight);
+                
+                // Labels
+                ctx.fillStyle = '#333';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.save();
+                ctx.translate(x + barWidth * 1.5, height - margin.bottom + 10);
+                ctx.rotate(-Math.PI / 4);
+                ctx.fillText(item.label, 0, 0);
+                ctx.restore();
+            });
+            
+            // Y-axis labels
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const value = (maxValue * i) / 5;
+                const y = height - margin.bottom - (chartHeight * i) / 5;
+                ctx.fillText(`₹${value.toFixed(0)}L`, margin.left - 10, y + 4);
+            }
+            
+            // Legend
+            const legendItems = ['Min', 'Avg', 'Max'];
+            const legendColors = ['#e8eaf6', '#5c6bc0', '#1a237e'];
+            let legendX = width - 100;
+            
+            legendItems.forEach((item, index) => {
+                ctx.fillStyle = legendColors[index];
+                ctx.fillRect(legendX, 10 + index * 20, 15, 15);
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(item, legendX + 20, 22 + index * 20);
+            });
+        }
+
+        // Draw trend chart
+        function drawTrendChart() {
+            const canvas = document.getElementById('trendChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Prepare data
+            const years = Object.keys(placementData);
+            const medianData = years.map(year => placementData[year].overall.medianSalary);
+            const avgData = years.map(year => placementData[year].overall.avgSalary);
+            
+            // Set up chart dimensions
+            const margin = { top: 20, right: 20, bottom: 40, left: 50 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+            const maxValue = Math.max(...medianData, ...avgData);
+            const minValue = Math.min(...medianData, ...avgData);
+            
+            // Draw axes
+            ctx.strokeStyle = '#ccc';
+            ctx.beginPath();
+            ctx.moveTo(margin.left, margin.top);
+            ctx.lineTo(margin.left, height - margin.bottom);
+            ctx.lineTo(width - margin.right, height - margin.bottom);
+            ctx.stroke();
+            
+            // Draw grid lines
+            ctx.strokeStyle = '#f0f0f0';
+            for (let i = 1; i <= 5; i++) {
+                const y = margin.top + (chartHeight * i) / 5;
+                ctx.beginPath();
+                ctx.moveTo(margin.left, y);
+                ctx.lineTo(width - margin.right, y);
+                ctx.stroke();
+            }
+            
+            // Draw lines
+            const drawLine = (data, color) => {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                data.forEach((value, index) => {
+                    const x = margin.left + (index / (data.length - 1)) * chartWidth;
+                    const y = height - margin.bottom - ((value - minValue) / (maxValue - minValue)) * chartHeight;
+                    
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                    
+                    // Draw point
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // Draw value
+                    ctx.fillStyle = '#333';
+                    ctx.font = '10px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`₹${value}`, x, y - 10);
+                });
+                
+                ctx.stroke();
+            };
+            
+            drawLine(medianData, '#1a237e');
+            drawLine(avgData, '#5c6bc0');
+            
+            // X-axis labels
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            years.forEach((year, index) => {
+                const x = margin.left + (index / (years.length - 1)) * chartWidth;
+                ctx.fillText(year, x, height - margin.bottom + 20);
+            });
+            
+            // Y-axis labels
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const value = minValue + ((maxValue - minValue) * i) / 5;
+                const y = height - margin.bottom - (chartHeight * i) / 5;
+                ctx.fillText(`₹${value.toFixed(1)}L`, margin.left - 10, y + 4);
+            }
+            
+            // Legend
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#1a237e';
+            ctx.fillRect(width - 150, 20, 15, 15);
+            ctx.fillStyle = '#333';
+            ctx.fillText('Median Salary', width - 130, 32);
+            
+            ctx.fillStyle = '#5c6bc0';
+            ctx.fillRect(width - 150, 40, 15, 15);
+            ctx.fillStyle = '#333';
+            ctx.fillText('Average Salary', width - 130, 52);
+        }
+
+        // Draw placement rate chart
+        function drawPlacementRateChart() {
+            const canvas = document.getElementById('placementRateChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Prepare data
+            const years = Object.keys(placementData);
+            const rates = years.map(year => {
+                const data = placementData[year];
+                const totalRegistered = calculateTotal(data.departments, 'registered');
+                const totalPlaced = calculateTotal(data.departments, 'placed');
+                return totalRegistered > 0 ? (totalPlaced / totalRegistered) * 100 : 0;
+            });
+            
+            // Set up chart dimensions
+            const margin = { top: 20, right: 20, bottom: 40, left: 50 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+            const barWidth = chartWidth / (years.length * 2);
+            
+            // Draw axes
+            ctx.strokeStyle = '#ccc';
+            ctx.beginPath();
+            ctx.moveTo(margin.left, margin.top);
+            ctx.lineTo(margin.left, height - margin.bottom);
+            ctx.lineTo(width - margin.right, height - margin.bottom);
+            ctx.stroke();
+            
+            // Draw bars
+            rates.forEach((rate, index) => {
+                const x = margin.left + (index * 2 + 0.5) * barWidth;
+                const barHeight = (rate / 100) * chartHeight;
+                
+                // Gradient fill
+                const gradient = ctx.createLinearGradient(0, height - margin.bottom - barHeight, 0, height - margin.bottom);
+                gradient.addColorStop(0, '#5c6bc0');
+                gradient.addColorStop(1, '#1a237e');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, height - margin.bottom - barHeight, barWidth, barHeight);
+                
+                // Value on top
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${rate.toFixed(1)}%`, x + barWidth / 2, height - margin.bottom - barHeight - 10);
+                
+                // Year label
+                ctx.font = '12px Arial';
+                ctx.fillText(years[index], x + barWidth / 2, height - margin.bottom + 20);
+            });
+            
+            // Y-axis labels
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const value = i * 20;
+                const y = height - margin.bottom - (chartHeight * i) / 5;
+                ctx.fillText(`${value}%`, margin.left - 10, y + 4);
+            }
+            
+            // Title
+            ctx.fillStyle = '#1a237e';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Placement Success Rate', width / 2, margin.top - 5);
+        }
+    </script>
+</body>
+</html>
