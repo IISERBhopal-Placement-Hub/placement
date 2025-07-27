@@ -829,7 +829,13 @@
                                     <div class="dept-stat-label">Placed</div>
                                     <div class="dept-stat-value">${stats.placed}</div>
                                 </div>
-                            ` : ''}
+                            ` : `
+                                <div class="dept-stat" style="grid-column: 1 / -1; text-align: center; background: #fafafa; border: 2px dashed #ddd;">
+                                    <div class="dept-stat-label">Status</div>
+                                    <div class="dept-stat-value" style="color: #888; font-size: 1rem;">No Registrations</div>
+                                    <div style="font-size: 0.8rem; color: #aaa; margin-top: 5px;">Department not active this year</div>
+                                </div>
+                            `}
                             ${stats.maxSalary !== null ? `
                                 <div class="dept-stat">
                                     <div class="dept-stat-label">Max Salary</div>
